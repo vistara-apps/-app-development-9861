@@ -1,32 +1,80 @@
 import React, { useState } from 'react'
-import { Video, Mail, Lock, Building, Globe } from 'lucide-react'
+import { Video, Mail, Lock, Building, Globe, User } from 'lucide-react'
+import { InputField, SelectField, useFormValidation, validationRules } from '../components/FormComponents'
+import { LoadingButton } from '../components/LoadingStates'
 
 const Login = ({ onLogin }) => {
   const [isSignUp, setIsSignUp] = useState(false)
-  const [formData, setFormData] = useState({
+  const [isLoading, setIsLoading] = useState(false)
+
+  const initialValues = {
     email: '',
     password: '',
     name: '',
     company: '',
     industry: ''
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Simulate login/signup
-    onLogin()
   }
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+  const getValidationRules = () => {
+    const baseRules = {
+      email: [validationRules.required, validationRules.email],
+      password: [validationRules.required, validationRules.password]
+    }
+
+    if (isSignUp) {
+      return {
+        ...baseRules,
+        name: [validationRules.required, validationRules.minLength(2)],
+        company: [validationRules.required, validationRules.minLength(2)],
+        industry: [validationRules.required]
+      }
+    }
+
+    return baseRules
+  }
+
+  const { values, errors, handleChange, handleBlur, validateAll, reset } = useFormValidation(
+    initialValues,
+    getValidationRules()
+  )
+
+  const industryOptions = [
+    { value: 'technology', label: 'Technology' },
+    { value: 'finance', label: 'Finance' },
+    { value: 'healthcare', label: 'Healthcare' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'manufacturing', label: 'Manufacturing' },
+    { value: 'other', label: 'Other' }
+  ]
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!validateAll()) {
+      return
+    }
+
+    setIsLoading(true)
+    
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      onLogin()
+    } catch (error) {
+      console.error('Login failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleModeSwitch = () => {
+    setIsSignUp(!isSignUp)
+    reset()
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-blue-100">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-blue-100 px-4">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg fade-in">
         <div className="text-center">
           <div className="flex justify-center">
             <Video className="h-12 w-12 text-primary-600" />
@@ -42,130 +90,92 @@ const Login = ({ onLogin }) => {
           </p>
         </div>
         
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={handleSubmit} noValidate>
           {isSignUp && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    className="input-field pl-10"
-                    placeholder="Enter your full name"
-                    value={formData.name}
-                    onChange={handleChange}
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
+            <div className="space-y-6 slide-up">
+              <InputField
+                label="Full Name"
+                name="name"
+                type="text"
+                value={values.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.name}
+                placeholder="Enter your full name"
+                icon={User}
+                required
+              />
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
-                </label>
-                <div className="relative">
-                  <input
-                    name="company"
-                    type="text"
-                    required
-                    className="input-field pl-10"
-                    placeholder="Your company name"
-                    value={formData.company}
-                    onChange={handleChange}
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <Building className="h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
+              <InputField
+                label="Company"
+                name="company"
+                type="text"
+                value={values.company}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.company}
+                placeholder="Your company name"
+                icon={Building}
+                required
+              />
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Industry
-                </label>
-                <div className="relative">
-                  <select
-                    name="industry"
-                    required
-                    className="input-field pl-10"
-                    value={formData.industry}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select your industry</option>
-                    <option value="technology">Technology</option>
-                    <option value="finance">Finance</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="retail">Retail</option>
-                    <option value="manufacturing">Manufacturing</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <Globe className="h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-            </>
+              <SelectField
+                label="Industry"
+                name="industry"
+                value={values.industry}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.industry}
+                options={industryOptions}
+                placeholder="Select your industry"
+                icon={Globe}
+                required
+              />
+            </div>
           )}
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <div className="relative">
-              <input
-                name="email"
-                type="email"
-                required
-                className="input-field pl-10"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
-          </div>
+          <InputField
+            label="Email Address"
+            name="email"
+            type="email"
+            value={values.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={errors.email}
+            placeholder="Enter your email"
+            icon={Mail}
+            required
+          />
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                name="password"
-                type="password"
-                required
-                className="input-field pl-10"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
-          </div>
+          <InputField
+            label="Password"
+            name="password"
+            type="password"
+            value={values.password}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={errors.password}
+            placeholder="Enter your password"
+            icon={Lock}
+            required
+          />
           
-          <button
+          <LoadingButton
             type="submit"
+            loading={isLoading}
             className="w-full btn-primary py-3 text-lg"
+            disabled={isLoading}
           >
             {isSignUp ? 'Create Account' : 'Sign In'}
-          </button>
+          </LoadingButton>
         </form>
         
         <div className="text-center">
           <button
             type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-primary-600 hover:text-primary-700 text-sm"
+            onClick={handleModeSwitch}
+            className="text-primary-600 hover:text-primary-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-md px-2 py-1 transition-colors"
+            disabled={isLoading}
           >
             {isSignUp
               ? 'Already have an account? Sign in'

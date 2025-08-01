@@ -1,20 +1,28 @@
-import React from 'react'
-import { Play, Star, Clock, Users } from 'lucide-react'
+import React, { useState } from 'react'
+import { Star, Clock, Users, Eye } from 'lucide-react'
+import { motion } from 'framer-motion'
+import VideoPreview from './VideoPreview'
 
 const TemplateCard = ({ template, onPersonalize }) => {
+  const [isHovered, setIsHovered] = useState(false)
+
   return (
-    <div className="template-card card overflow-hidden">
+    <motion.div 
+      className="template-card card overflow-hidden"
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+    >
       <div className="relative">
-        <div className="video-preview h-48 flex items-center justify-center">
-          <Play className="h-12 w-12 text-white opacity-80" />
-        </div>
-        <div className="absolute top-4 left-4">
-          <span className="bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
-            {template.type}
-          </span>
-        </div>
-        <div className="absolute top-4 right-4 flex items-center space-x-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
-          <Star className="h-3 w-3 fill-current" />
+        <VideoPreview 
+          template={template}
+          className="h-48"
+          showControls={isHovered}
+          autoPlay={false}
+        />
+        <div className="absolute top-4 right-4 flex items-center space-x-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+          <Star className="h-3 w-3 fill-current text-yellow-400" />
           <span>4.8</span>
         </div>
       </div>
@@ -56,18 +64,25 @@ const TemplateCard = ({ template, onPersonalize }) => {
         </div>
         
         <div className="flex space-x-2">
-          <button className="flex-1 btn-secondary text-sm">
-            Preview
-          </button>
-          <button 
+          <motion.button 
+            className="flex-1 btn-secondary text-sm flex items-center justify-center space-x-1"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Eye className="h-4 w-4" />
+            <span>Preview</span>
+          </motion.button>
+          <motion.button 
             onClick={onPersonalize}
             className="flex-1 btn-primary text-sm"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             Personalize
-          </button>
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
