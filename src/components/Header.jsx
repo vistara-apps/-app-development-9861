@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { 
   Video, 
@@ -7,11 +7,14 @@ import {
   Target, 
   LogOut,
   Bell,
-  Settings
+  Settings,
+  Menu,
+  X
 } from 'lucide-react'
 
 const Header = ({ onLogout }) => {
   const location = useLocation()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: BarChart3 },
@@ -19,6 +22,10 @@ const Header = ({ onLogout }) => {
     { name: 'Campaigns', href: '/campaigns', icon: Target },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 }
   ]
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
@@ -37,11 +44,12 @@ const Header = ({ onLogout }) => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                       isActive
                         ? 'text-primary-600 bg-primary-50'
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                     }`}
+                    aria-current={isActive ? 'page' : undefined}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.name}</span>
@@ -51,22 +59,103 @@ const Header = ({ onLogout }) => {
             </nav>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <button className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md">
-              <Bell className="h-5 w-5" />
-            </button>
-            <button className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md">
-              <Settings className="h-5 w-5" />
-            </button>
+          <div className="flex items-center space-x-2">
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center space-x-2">
+              <button 
+                className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="h-5 w-5" />
+              </button>
+              <button 
+                className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="h-5 w-5" />
+              </button>
+              <button
+                onClick={onLogout}
+                className="flex items-center space-x-2 p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                aria-label="Logout"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="text-sm">Logout</span>
+              </button>
+            </div>
+            
+            {/* Mobile Menu Button */}
             <button
-              onClick={onLogout}
-              className="flex items-center space-x-2 p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md"
+              onClick={toggleMobileMenu}
+              className="md:hidden p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+              aria-label="Toggle mobile menu"
+              aria-expanded={isMobileMenuOpen}
             >
-              <LogOut className="h-5 w-5" />
-              <span className="text-sm">Logout</span>
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
+        
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 bg-white slide-up">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navigation.map((item) => {
+                const Icon = item.icon
+                const isActive = location.pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+                      isActive
+                        ? 'text-primary-600 bg-primary-50'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                )
+              })}
+              
+              {/* Mobile Actions */}
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                <button 
+                  className="flex items-center space-x-3 w-full px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md text-base font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-5 w-5" />
+                  <span>Notifications</span>
+                </button>
+                <button 
+                  className="flex items-center space-x-3 w-full px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md text-base font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                  aria-label="Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                  <span>Settings</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false)
+                    onLogout()
+                  }}
+                  className="flex items-center space-x-3 w-full px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md text-base font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                  aria-label="Logout"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )
